@@ -1,0 +1,59 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Profile from "@components/Profile";
+
+const UserProfile = () => {
+  const params = useParams();
+  const userId = params?.id;
+  const [user, setUser] = useState({ username: "", email: "" });
+  const [posts, setPosts] = useState([]);
+  const [tagFilter, setTagFilter] = useState("");
+
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      let url = `/api/users/${userId}/posts`;
+      if (tagFilter) {
+        url = `/api/prompt?tag=${encodeURIComponent(tagFilter)}`;
+      }
+      const res = await fetch(url);
+      const data = await res.json();
+      setPosts(data || []);
+      if (!tagFilter && data.length > 0 && data[0].creator) {
+        setUser({
+          username: data[0].creator.username || "",
+          email: data[0].creator.email || "",
+        });
+      }
+    };
+    if (userId) fetchUserPosts();
+  }, [userId, tagFilter]);
+
+  const handleTagClick = (tag) => {
+    setTagFilter(tag);
+  };
+
+  const displayPosts = tagFilter
+    ? Array.from(
+        new Map(posts.map((p) => [p.creator._id, p])).values()
+      )
+    : posts;
+
+  return (
+    <Profile
+      name={tagFilter ? `Users with #${tagFilter}` : user.username || "User"}
+      desc={
+        tagFilter
+          ? `Showing users who have prompts with #${tagFilter}`
+          : `See ${user.username || "this user"}'s public prompts and tags.`
+      }
+      data={displayPosts}
+      handleEdit={null}
+      handleDelete={null}
+      handleTagClick={handleTagClick}
+    />
+  );
+};
+
+export default UserProfile;

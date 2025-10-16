@@ -29,7 +29,7 @@ const Navbar = () => {
           height={35}
           className="object-contain"
         />
-        <p className="logo_text">Prompter.ai</p>
+        <p className="logo_text">Prompter</p>
       </Link>
 
       
